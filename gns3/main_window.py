@@ -298,7 +298,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.ready_signal.connect(self._readySlot)
 
-
     def project(self):
         """
         Return current project
@@ -457,7 +456,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self._project.close()
 
     def loadPath(self, path):
-        """Open a file and close the previous project"""
+        """
+        Open a file and close the previous project
+
+        :param appliance: Force detection of the file as an appliance
+        """
 
         if path:
             if self._first_file_load is True:
@@ -495,13 +498,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     return
                 self._appliance_wizard.show()
                 self._appliance_wizard.exec_()
-            elif self.checkForUnsavedChanges():
-                self._open_project_path = path
-                if self._project.closed():
-                    self._projectClosedContinueLoadPath()
-                else:
-                    self._project.project_closed_signal.connect(self._projectClosedContinueLoadPath)
-                    self._project.close()
+            elif path.endswith(".gns3") or path.endswith(".net"):
+                if self.checkForUnsavedChanges():
+                    self._open_project_path = path
+                    if self._project.closed():
+                        self._projectClosedContinueLoadPath()
+                    else:
+                        self._project.project_closed_signal.connect(self._projectClosedContinueLoadPath)
+                        self._project.close()
+            else:
+                try:
+                    extension = path.split('.')[1]
+                    QtWidgets.QMessageBox.critical(self, "File open", "Unsupported file extension {} for {}".format(extension, path))
+                except IndexError:
+                    QtWidgets.QMessageBox.critical(self, "File open", "Missing file extension for {}".format(path))
 
     def _projectClosedContinueLoadPath(self):
 
@@ -1236,18 +1246,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # start and connect to the local server
         server = servers.localServer()
         if servers.shouldLocalServerAutoStart():
-                if not servers.localServerAutoStart():
-                    QtWidgets.QMessageBox.critical(self, "Local server", "Could not start the local server process: {}".format(servers.localServerPath()))
-                    return
+            if not servers.localServerAutoStart():
+                QtWidgets.QMessageBox.critical(self, "Local server", "Could not start the local server process: {}".format(servers.localServerPath()))
+                return
 
-                worker = WaitForConnectionWorker(server.host(), server.port())
-                progress_dialog = ProgressDialog(worker,
-                                                 "Local server",
-                                                 "Connecting to server {} on port {}...".format(server.host(), server.port()),
-                                                 "Cancel", busy=True, parent=self)
-                progress_dialog.show()
-                if not progress_dialog.exec_():
-                    return
+            worker = WaitForConnectionWorker(server.host(), server.port())
+            progress_dialog = ProgressDialog(worker,
+                                             "Local server",
+                                             "Connecting to server {} on port {}...".format(server.host(), server.port()),
+                                             "Cancel", busy=True, parent=self)
+            progress_dialog.show()
+            if not progress_dialog.exec_():
+                return
 
         # show the setup wizard
         if not self._settings["hide_setup_wizard"] and not gns3_vm.isRunning():
