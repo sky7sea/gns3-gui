@@ -20,7 +20,8 @@ import os
 import uuid
 import pathlib
 from gns3.local_server import LocalServer
-from gns3.ports.port import Port
+from gns3.ports.ethernet_port import EthernetPort
+from gns3.ports.serial_port import SerialPort
 from gns3.qt import QtGui, QtCore
 
 from .base_node import BaseNode
@@ -332,23 +333,14 @@ class Node(BaseNode):
             elif result["status"] == "suspended":
                 self.setStatus(Node.suspended)
 
+        if "ports" in result:
+            self._updatePorts(result["ports"])
+
         if "properties" in result:
             for name, value in result["properties"].items():
                 # FIXME: Special case for dynamips interface
                 if name.startswith("slot") or name.startswith("wic"):
                     pass
-                elif name == "adapters" and self._settings[name] != value:
-                    self._settings[name] = value
-                    log.debug("number of adapters has changed to {}".format(self._settings["adapters"]))
-                    # TODO: dynamically add/remove adapters
-                    self._ports.clear()
-                    self._addAdapters(self._settings["adapters"])
-                elif name in ["ethernet_adapters", "serial_adapters"] and self._settings[name] != value:
-                    self._settings[name] = value
-                    log.debug("number of adapters has changed: Ethernet={} Serial={}".format(self._settings["ethernet_adapters"], self._settings["serial_adapters"]))
-                    # TODO: dynamically add/remove adapters
-                    self._ports.clear()
-                    self._addAdapters(self._settings["ethernet_adapters"], self._settings["serial_adapters"])
                 elif name in self._settings and self._settings[name] != value:
                     log.debug("{} setting up and updating {} from '{}' to '{}'".format(self.name(), name, self._settings[name], value))
                     self._settings[name] = value
@@ -362,6 +354,20 @@ class Node(BaseNode):
                 self._settings[key] = result[key]
 
         return result
+
+    def _updatePorts(self, ports):
+        self._ports.clear()
+        self._settings["ports"] = ports
+        for port in ports:
+            if port["link_type"] == "serial":
+                new_port = SerialPort(port["name"])
+            else:
+                new_port = EthernetPort(port["name"])
+            new_port.setShortName(port["short_name"])
+            new_port.setAdapterNumber(port["adapter_number"])
+            new_port.setPortNumber(port["port_number"])
+            new_port.setDataLinkTypes(port["data_link_types"])
+            self._ports.append(new_port)
 
     def _updateCallback(self, result):
         """
