@@ -21,7 +21,6 @@ VPCS node implementation.
 
 import os
 from gns3.node import Node
-from gns3.ports.ethernet_port import EthernetPort
 from gns3.utils.normalize_filename import normalize_filename
 
 import logging

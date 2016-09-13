@@ -21,7 +21,6 @@ QEMU VM implementation.
 
 from gns3.node import Node
 from gns3.image_manager import ImageManager
-from gns3.ports.ethernet_port import EthernetPort
 from .settings import QEMU_VM_SETTINGS
 
 
