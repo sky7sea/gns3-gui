@@ -60,7 +60,7 @@ class EthernetHub(Node):
 
         :param result: server response (dict)
         """
-        self.settings["ports_mapping"] = result["ports_mapping"]
+        self.settings()["ports_mapping"] = result["ports_mapping"]
 
     def update(self, new_settings):
         """
@@ -83,7 +83,7 @@ class EthernetHub(Node):
 
         :param result: server response
         """
-        self.settings["ports_mapping"] = result["ports_mapping"]
+        self.settings()["ports_mapping"] = result["ports_mapping"]
 
     def info(self):
         """

@@ -64,7 +64,7 @@ class FrameRelaySwitch(Node):
 
         :param result: server response (dict)
         """
-        self.settings["mappings"] = result["mappings"]
+        self.settings()["mappings"] = result["mappings"]
 
     def update(self, new_settings):
         """
@@ -86,7 +86,7 @@ class FrameRelaySwitch(Node):
 
         :param result: server response
         """
-        self.settings["mappings"] = result["mappings"]
+        self.settings()["mappings"] = result["mappings"]
 
     def info(self):
         """
