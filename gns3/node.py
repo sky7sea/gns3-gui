@@ -338,7 +338,6 @@ class Node(BaseNode):
 
         if "properties" in result:
             for name, value in result["properties"].items():
-                # FIXME: Special case for dynamips interface
                 if name.startswith("slot") or name.startswith("wic"):
                     pass
                 elif name in self._settings and self._settings[name] != value:
@@ -367,6 +366,7 @@ class Node(BaseNode):
             new_port.setAdapterNumber(port["adapter_number"])
             new_port.setPortNumber(port["port_number"])
             new_port.setDataLinkTypes(port["data_link_types"])
+            new_port.setStatus(self.status())
             self._ports.append(new_port)
 
     def _updateCallback(self, result):

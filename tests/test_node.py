@@ -21,6 +21,7 @@ import uuid
 from unittest.mock import patch, Mock, MagicMock
 from gns3.modules.vpcs.vpcs_node import VPCSNode
 from gns3.node import Node
+from gns3.ports.port import Port
 from gns3.ports.ethernet_port import EthernetPort
 from gns3.ports.serial_port import SerialPort
 
@@ -116,14 +117,16 @@ def test_updatePorts(vpcs_device):
         }
     ])
     assert len(vpcs_device._ports) == 1
-    device = vpcs_device._ports[0]
-    assert device.name() == "Ethernet0/0"
-    assert device.shortName() == "e0/0"
-    assert device.portNumber() == 0
-    assert device.adapterNumber() == 0
-    assert device.dataLinkTypes() == {"Ethernet": "DLT_EN10MB"}
-    assert isinstance(device, EthernetPort)
+    port = vpcs_device._ports[0]
+    assert port.name() == "Ethernet0/0"
+    assert port.shortName() == "e0/0"
+    assert port.portNumber() == 0
+    assert port.adapterNumber() == 0
+    assert port.dataLinkTypes() == {"Ethernet": "DLT_EN10MB"}
+    assert port.status() == Port.stopped
+    assert isinstance(port, EthernetPort)
 
+    vpcs_device.setStatus(Node.started)
     vpcs_device._updatePorts([
         {
             "name": "Serial0/0",
@@ -135,5 +138,6 @@ def test_updatePorts(vpcs_device):
         }
     ])
     assert len(vpcs_device._ports) == 1
-    device = vpcs_device._ports[0]
-    assert isinstance(device, SerialPort)
+    port = vpcs_device._ports[0]
+    assert port.status() == Port.started
+    assert isinstance(port, SerialPort)
