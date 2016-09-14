@@ -141,3 +141,34 @@ def test_updatePorts(vpcs_device):
     port = vpcs_device._ports[0]
     assert port.status() == Port.started
     assert isinstance(port, SerialPort)
+
+
+def test_updatePorts_PortChange(vpcs_device):
+    """
+    If the same port we do not recreate it but just update his informations
+    """
+    vpcs_device._updatePorts([
+        {
+            "name": "Ethernet0/0",
+            "short_name": "e0/0",
+            "data_link_types": {"Ethernet": "DLT_EN10MB"},
+            "port_number": 0,
+            "adapter_number": 0,
+            "link_type": "ethernet"
+        }
+    ])
+    port = vpcs_device._ports[0]
+
+    vpcs_device.setStatus(Node.started)
+    vpcs_device._updatePorts([
+        {
+            "name": "Ethernet0/0",
+            "short_name": "e0/0",
+            "data_link_types": {"Ethernet": "DLT_EN10MB"},
+            "port_number": 0,
+            "adapter_number": 0,
+            "link_type": "ethernet"
+        }
+    ])
+    assert port == vpcs_device._ports[0]
+    assert port.status() == Port.started

@@ -355,19 +355,33 @@ class Node(BaseNode):
         return result
 
     def _updatePorts(self, ports):
-        self._ports.clear()
         self._settings["ports"] = ports
+        old_ports = self._ports.copy()
         for port in ports:
-            if port["link_type"] == "serial":
-                new_port = SerialPort(port["name"])
-            else:
-                new_port = EthernetPort(port["name"])
+            new_port = None
+
+            # Update port if already exist
+            for old_port in self._ports:
+                if old_port.adapterNumber() == port["adapter_number"] and old_port.portNumber() == port["port_number"] and old_port.name() == port["name"]:
+                    new_port = old_port
+                    old_ports.remove(old_port)
+                    break
+
+            if new_port is None:
+                if port["link_type"] == "serial":
+                    new_port = SerialPort(port["name"])
+                else:
+                    new_port = EthernetPort(port["name"])
             new_port.setShortName(port["short_name"])
             new_port.setAdapterNumber(port["adapter_number"])
             new_port.setPortNumber(port["port_number"])
             new_port.setDataLinkTypes(port["data_link_types"])
             new_port.setStatus(self.status())
             self._ports.append(new_port)
+
+        # Delete removed port
+        for old_port in old_ports:
+            self._ports.remove(old_port)
 
     def _updateCallback(self, result):
         """
